@@ -16,7 +16,7 @@ pkgname=()
 
 pkgver=2.5.0
 _pkgver=2.5.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Library for computation using data flow graphs for scalable machine learning"
 url="https://www.tensorflow.org/"
 license=('APACHE')
@@ -25,7 +25,7 @@ depends=('c-ares' 'intel-mkl' 'onednn' 'pybind11' 'openssl-1.0' 'lmdb' 'libpng' 
 makedepends=('bazel' 'python-numpy' 'rocm' 'rocm-libs' 'miopen' 'rccl' 'git'
              'python-pip' 'python-wheel' 'python-setuptools' 'python-h5py'
              'python-keras-applications' 'python-keras-preprocessing'
-             'cython')
+             'cython' 'gcc10')
 optdepends=('tensorboard: Tensorflow visualization toolkit')
 source=("$pkgname-$pkgver.tar.gz::https://github.com/tensorflow/tensorflow/archive/v${_pkgver}.tar.gz"
         https://patch-diff.githubusercontent.com/raw/tensorflow/tensorflow/pull/48935.patch
@@ -101,7 +101,7 @@ prepare() {
   export TF_NEED_NGRAPH=0
   export TF_NEED_IGNITE=0
   export TF_NEED_ROCM=1
-  export TF_ROCM_AMDGPU_TARGETS=gfx701,gfx702,gfx803,gfx900,gfx904,gfx906,gfx908
+  export TF_ROCM_AMDGPU_TARGETS=gfx900,gfx904,gfx906,gfx908,gfx1010
   # See https://github.com/tensorflow/tensorflow/blob/master/third_party/systemlibs/syslibs_configure.bzl
   export TF_SYSTEM_LIBS="boringssl,curl,cython,gif,icu,libjpeg_turbo,lmdb,nasm,pcre,png,pybind11,zlib"
   export TF_SET_ANDROID_WORKSPACE=0
@@ -123,7 +123,7 @@ prepare() {
   export CC=gcc-10
   export CXX=g++-10
 
-  export BAZEL_ARGS="--config=mkl -c opt --copt=-I/usr/include/openssl-1.0 --host_copt=-I/usr/include/openssl-1.0 --linkopt=-l:libssl.so.1.0.0 --linkopt=-l:libcrypto.so.1.0.0 --host_linkopt=-l:libssl.so.1.0.0 --host_linkopt=-l:libcrypto.so.1.0.0"
+  export BAZEL_ARGS="--define=tensorflow_enable_mlir_generated_gpu_kernels=0 --config=mkl -c opt --copt=-I/usr/include/openssl-1.0 --host_copt=-I/usr/include/openssl-1.0 --linkopt=-l:libssl.so.1.0.0 --linkopt=-l:libcrypto.so.1.0.0 --host_linkopt=-l:libssl.so.1.0.0 --host_linkopt=-l:libcrypto.so.1.0.0"
 }
 
 build() {
@@ -134,7 +134,7 @@ build() {
     export TF_NEED_CUDA=0
     export TF_NEED_ROCM=1
     ./configure
-    bazel \
+    bazel --host_jvm_args=--illegal-access=permit\
       build \
         ${BAZEL_ARGS[@]} \
         //tensorflow:libtensorflow.so \
@@ -152,7 +152,7 @@ build() {
     export TF_NEED_CUDA=0
     export TF_NEED_ROCM=1
     ./configure
-    bazel \
+    bazel --host_jvm_args=--illegal-access=permit\
       build --config=avx2_linux \
         ${BAZEL_ARGS[@]} \
         //tensorflow:libtensorflow.so \
