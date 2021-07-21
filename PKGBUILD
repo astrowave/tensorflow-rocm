@@ -134,7 +134,7 @@ build() {
     export TF_NEED_CUDA=0
     export TF_NEED_ROCM=1
     ./configure
-    bazel --host_jvm_args=--illegal-access=permit\
+    bazel --host_jvm_args=--illegal-access=permit \
       build \
         ${BAZEL_ARGS[@]} \
         //tensorflow:libtensorflow.so \
@@ -152,7 +152,7 @@ build() {
     export TF_NEED_CUDA=0
     export TF_NEED_ROCM=1
     ./configure
-    bazel --host_jvm_args=--illegal-access=permit\
+    bazel --host_jvm_args=--illegal-access=permit \
       build --config=avx2_linux \
         ${BAZEL_ARGS[@]} \
         //tensorflow:libtensorflow.so \
